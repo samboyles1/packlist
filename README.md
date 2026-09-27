@@ -11,10 +11,56 @@ is being built in stages; see [`docs/ROADMAP.md`](docs/ROADMAP.md).
 
 | | |
 |---|---|
-| Stack | React Native + Expo (TypeScript), Supabase (Postgres/Auth/Realtime) |
-| Stage | 0 — Foundations |
-| Repo | Local only, no remote configured yet |
-| App name | Placeholder — single constant to rename later |
+| Stack | Expo SDK 57 (React Native 0.86), TypeScript, expo-router, Supabase |
+| Stage | 0 — Foundations (in progress) |
+| Expo SDK | 57 · React 19.2.3 · Node 22 |
+| Repo | github.com/samboyles1/packlist (private) |
+| App name | Placeholder — `app.config.ts` is the only place to rename |
+
+## Commands
+
+```bash
+npm start          # dev server
+npm run ios        # dev server, iOS  (Xcode 26 installed locally)
+npm run android    # requires a dev build; see "Builds" below
+npm run typecheck  # tsc --noEmit
+npm run lint       # expo lint
+npm test           # jest
+npm run doctor     # expo-doctor, dependency and config diagnosis
+```
+
+## Directory structure
+
+```
+app.config.ts              Expo config + THE app identity (decision D7).
+                           Self-contained by necessity — do not import from src/.
+metro.config.js            BlockLists reference/ so the watcher skips it.
+src/
+  app/                     expo-router routes. Files here are screens; a
+                           _layout.tsx defines a navigator. No business logic.
+  components/              Presentational, reusable. No data access.
+  lib/                     Pure logic. The weight engine lives here (S1-04) and
+                           is the only place totals are computed.
+  data/                    Repository interface and data sources (D6). No
+                           component may import Supabase directly.
+  types/                   Shared types.
+  __tests__/               Unit tests.
+docs/                      The plan. See the table above.
+reference/                 The original web artifact, de-minified. Not built
+                           into the app; blockListed from Metro.
+supabase/migrations/       Applied by hand from Stage 2 (S2-02).
+assets/                    Icons. Store assets come later, at Stage 8.
+```
+
+The layering rule that matters: **`src/app/` may only talk to `src/data/`, and
+only via the repository interface.** Screens never query Supabase and never
+compute a weight.
+
+## Builds
+
+Android builds are **cloud-only** — no local JDK is installed, and none is
+needed. iOS can run locally against the installed Xcode; both platforms build
+through EAS.
 
 ## Documents
 
