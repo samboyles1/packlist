@@ -14,15 +14,11 @@ describe('app config', () => {
   });
 
   it('uses a valid reverse-DNS bundle ID for iOS', () => {
-    expect(config.ios?.bundleIdentifier).toMatch(
-      /^[a-z][a-z0-9-]*(\.[a-z][a-z0-9-]*)+$/,
-    );
+    expect(config.ios?.bundleIdentifier).toMatch(/^[a-z][a-z0-9-]*(\.[a-z][a-z0-9-]*)+$/);
   });
 
   it('uses a valid package name for Android', () => {
-    expect(config.android?.package).toMatch(
-      /^[a-z][a-z0-9-]*(\.[a-z][a-z0-9-]*)+$/,
-    );
+    expect(config.android?.package).toMatch(/^[a-z][a-z0-9-]*(\.[a-z][a-z0-9-]*)+$/);
   });
 
   it('keeps the top-level fields and the runtime mirror in sync', () => {
