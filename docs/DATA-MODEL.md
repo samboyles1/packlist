@@ -89,6 +89,8 @@ create table packs (
   name          text not null,
   -- e.g. 'Hunting Pack', 'Day Pack'
   type          text,
+  -- the bag's own weight and volume, i.e. what you carry before any contents
+  weight_grams  int check (weight_grams is null or weight_grams >= 0),
   litre_volume  numeric(6,2) check (litre_volume is null or litre_volume >= 0),
   created_at    timestamptz not null default now(),
   updated_at    timestamptz not null default now()
@@ -274,12 +276,28 @@ Per pack:
 
 | Figure | Definition |
 |---|---|
-| Base weight | Σ non-consumable, non-worn `weight_grams × qty` |
+| Base weight | `packs.weight_grams` + Σ non-consumable, non-worn item weights |
 | Worn weight | Σ `is_worn` items |
-| Consumables | Σ consumable `weight_grams × qty` |
-| **Total** | base + worn + consumables |
-| Linked gear | Σ weights of `item_links` targets, transitively, de-duplicated |
-| Contents weight | base + worn + consumables + linked |
+| Consumables | Σ consumable per-unit weight × qty |
+| Contents weight | base + worn + consumables |
+| Linked gear | Σ weights of `item_links` targets, transitive, de-duplicated, and excluding anything already on the pack |
+| **Total** | contents + linked |
+
+The pack's own weight belongs in base weight: a pack bag is carried, not worn,
+and never consumed. The original artifact agrees — the Stone Glacier Sky Talus
+6900 shows 2.4 kg / 113 L as an item in its own right, alongside its contents.
+
+**This was verified against the artifact's real numbers.** The Tikka T3x Lite
+rifle row reads `2.9 kg` with a linked-gear rollup of `3.75 kg` covering the
+scope, rings and bipod:
+
+```
+2900 + 561 + 57 + 230 = 3748 g = 3.748 kg -> displays as 3.75 kg
+```
+
+So the linked-gear figure is a sum of transitive targets in whole grams,
+formatted to 2 dp. `src/lib/weights.ts` reproduces this exactly and
+`src/__tests__/weights.test.ts` pins it.
 
 Consumable handling, given `units_per_pack` and `pack_weight_grams`:
 
