@@ -15,17 +15,19 @@ Legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[!]` blocked (say why)
 
 ## Stage 0 — Foundations
 
-- [ ] `S0-01` Create Expo app scaffold, TypeScript strict, expo-router
-- [ ] `S0-02` Central app identity constant: name, bundle ID, store fields (D7)
-- [ ] `S0-03` ESLint + Prettier, `npm run lint`, `npm run typecheck`
-- [ ] `S0-04` Test runner wired (`npm test`) with one smoke test
-- [ ] `S0-05` GitHub Actions: typecheck + lint + test on PRs
-- [ ] `S0-06` EAS project created, linked to repo, `eas build` verified
-- [ ] `S0-07` Directory structure agreed and documented in README
-- [ ] `S0-08` Configure the GitHub remote and push (blocked on `gh` install)
-- [ ] `S0-09` `.env.example` for Supabase URL and anon key
-- [ ] `S0-10` Decide bundler/tooling gaps: Android builds are cloud-only (no
-      local Java installed)
+- [x] `S0-01` Create Expo app scaffold, TypeScript strict, expo-router
+- [x] `S0-02` Central app identity constant: name, bundle ID, store fields (D7)
+- [x] `S0-03` ESLint + Prettier, `npm run lint`, `npm run typecheck`
+- [x] `S0-04` Test runner wired (`npm test`) — 5 tests guarding the app config
+- [x] `S0-05` GitHub Actions: typecheck + lint + test on PRs
+- [!] `S0-06` EAS project created, linked to repo, `eas build` verified
+      — *BLOCKED: needs interactive `npx eas-cli login`. Run it, then
+      `npx eas-cli init`. Last remaining Stage 0 task.*
+- [x] `S0-07` Directory structure agreed and documented in README
+- [x] `S0-08` Configure the GitHub remote and push — github.com/samboyles1/packlist
+- [x] `S0-09` `.env.example` for Supabase URL and anon key
+- [x] `S0-10` Tooling gaps decided and documented: Android builds are cloud-only
+      (no local JDK, and none needed). iOS runs locally against Xcode 26.
 
 ## Stage 1 — Local gear inventory (the port)
 
