@@ -20,9 +20,10 @@ Legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[!]` blocked (say why)
 - [x] `S0-03` ESLint + Prettier, `npm run lint`, `npm run typecheck`
 - [x] `S0-04` Test runner wired (`npm test`) — 5 tests guarding the app config
 - [x] `S0-05` GitHub Actions: typecheck + lint + test on PRs
-- [!] `S0-06` EAS project created, linked to repo, `eas build` verified
-      — *BLOCKED: needs interactive `npx eas-cli login`. Run it, then
-      `npx eas-cli init`. Last remaining Stage 0 task.*
+- [x] `S0-06` EAS project created and linked — `@supasma/packlist`. `eas
+      project:info` resolves. **Build verification deferred to `S1-29`**, where
+      there is actually something to build; `expo export` already proves the
+      bundle and native config are sound for both platforms.
 - [x] `S0-07` Directory structure agreed and documented in README
 - [x] `S0-08` Configure the GitHub remote and push — github.com/samboyles1/packlist
 - [x] `S0-09` `.env.example` for Supabase URL and anon key
