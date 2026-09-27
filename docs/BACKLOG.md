@@ -33,18 +33,19 @@ Legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[!]` blocked (say why)
 ## Stage 1 — Local gear inventory (the port)
 
 ### Data model
-- [ ] `S1-01` Category list seeded from `docs/DATA-MODEL.md`
+- [x] `S1-01` Category list seeded from `docs/DATA-MODEL.md`
       — *confirmed by owner: categories are system-owned, not user-definable*
 - [ ] `S1-02` Local store for items, packs, pack lines (SQLite or KV store)
-- [ ] `S1-03` Item type definitions mirroring the Supabase schema
+- [x] `S1-03` Item type definitions mirroring the Supabase schema
 
 ### Weight engine
-- [ ] `S1-04` `src/lib/weights.ts` — base / worn / consumables / total
-- [ ] `S1-05` Consumable handling: per-unit vs box, `units_per_pack` (R7)
-- [ ] `S1-06` Linked-gear rollup, transitive and de-duplicated
-- [ ] `S1-07` Per-category weight breakdown
-- [ ] `S1-08` Unit tests against hand-computed cases from the artifact (R7)
-- [ ] `S1-09` Rounding rule: half-up at display only, totals equal sum of lines
+- [x] `S1-04` `src/lib/weights.ts` — base / worn / consumables / total. Linked-gear
+      rollup verified against the artifact's 3748 g -> 3.75 kg
+- [x] `S1-05` Consumable handling: per-unit vs box, `units_per_pack` (R7)
+- [x] `S1-06` Linked-gear rollup, transitive and de-duplicated
+- [x] `S1-07` Per-category weight breakdown
+- [x] `S1-08` Unit tests against hand-computed cases from the artifact (R7)
+- [x] `S1-09` Rounding rule: half-up at display only, totals equal sum of lines
 
 ### Item management
 - [ ] `S1-10` Item list grouped by category, collapsible sections
