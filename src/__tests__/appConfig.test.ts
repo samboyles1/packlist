@@ -35,17 +35,14 @@ describe('app config', () => {
     expect(config.slug).toBeTruthy();
   });
 
-  it('omits eas.projectId entirely when EAS_PROJECT_ID is unset', () => {
+  it('sets eas.projectId to a string, never null', () => {
     // Regression: setting projectId to null made every `eas` command fail with
     // "must be a string, found object", and blocked the CLI from
-    // auto-configuring the project. The key must be absent, never null.
-    const eas = config.extra?.eas as { projectId?: unknown } | undefined;
+    // auto-configuring the project. The value is committed so cloud builds see
+    // it, and may be overridden with the EAS_PROJECT_ID env var.
+    const projectId = config.extra?.eas?.projectId;
 
-    if (process.env.EAS_PROJECT_ID) {
-      expect(eas?.projectId).toBe(process.env.EAS_PROJECT_ID);
-    } else {
-      expect(config.extra).not.toHaveProperty('eas');
-      expect(eas).toBeUndefined();
-    }
+    expect(typeof projectId).toBe('string');
+    expect(projectId).toMatch(/^[0-9a-f-]{36}$/);
   });
 });

@@ -23,9 +23,15 @@ const SCHEME = 'packlist';
 const IOS_BUNDLE_ID = 'com.example.packlist';
 const ANDROID_PACKAGE = 'com.example.packlist';
 
-// Set by `eas init` into the local .env (gitignored). Absent on a fresh clone,
-// which is fine — EAS auto-configures the project on its next run.
-const EAS_PROJECT_ID = process.env.EAS_PROJECT_ID;
+// EAS project id. Committed on purpose: cloud builds read app.config.ts and
+// would not see an id that only existed in a gitignored .env. Override locally
+// with EAS_PROJECT_ID if you ever need to point at a different project.
+//
+// `eas init` cannot write this file automatically ("Cannot automatically write
+// to dynamic config at: app.config.ts") because it is TS, so it is maintained
+// by hand.
+const EAS_PROJECT_ID =
+  process.env.EAS_PROJECT_ID ?? '3b072857-8434-40dc-bee6-dee4ca3fd471';
 
 const config: ExpoConfig = {
   name: NAME,
