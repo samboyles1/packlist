@@ -1,0 +1,48 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: Typecheck, lint and test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Test
+        run: npm test
+
+      - name: Check formatting
+        run: npx prettier --check "src/**/*.{ts,tsx}" "*.{ts,js,json}"
+
+      - name: App config loads
+        # The Expo config is evaluated at build time and by EAS. A malformed one
+        # fails neither typecheck nor lint, so assert it directly (see S0-02).
+        run: npx expo config --type public > /dev/null
+
+      - name: Metro bundles
+        # Catches import errors, bad route files and asset problems that unit
+        # tests never touch. Cheaper and faster than an EAS build.
+        run: npx expo export --platform ios --output-dir /tmp/ci-export --no-minify
