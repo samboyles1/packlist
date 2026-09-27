@@ -31,6 +31,7 @@ Legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[!]` blocked (say why)
 
 ### Data model
 - [ ] `S1-01` Category list seeded from `docs/DATA-MODEL.md`
+      — *confirmed by owner: categories are system-owned, not user-definable*
 - [ ] `S1-02` Local store for items, packs, pack lines (SQLite or KV store)
 - [ ] `S1-03` Item type definitions mirroring the Supabase schema
 
@@ -101,7 +102,9 @@ Legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[!]` blocked (say why)
 - [ ] `S2-16` Sync status indicator in the UI
 - [ ] `S2-17` Conflict-free-write argument tested: only own rows are written (D3)
 - [ ] `S2-18` `migrateLocalToCloud` — adopt local-only Stage 1 data on first
-      sign-in, **this is a migration people will care about**
+      sign-in. *Lower priority than it looks: no user gets the app before
+      accounts exist, so the only data to migrate is the developer's own.*
+      Still worth doing so Stage 1 testing data survives Stage 2.
 
 ### Tests
 - [ ] `S2-19` RLS policy tests: co-member read allowed, stranger read denied,
@@ -171,6 +174,8 @@ Legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[!]` blocked (say why)
 - [ ] `S8-01` Apple Developer Program enrolled (owner action)
 - [ ] `S8-02` Google Play Console enrolled (owner action)
 - [ ] `S8-03` Support page and privacy policy live (owner action)
+      — *confirmed by owner: deliberately deferred until close to release, not
+      a blocker for any build work*
 - [ ] `S8-04` App icon and store screenshots from real screens
 - [ ] `S8-05` Store description and keywords, avoiding firearms positioning (D10)
 - [ ] `S8-06` Privacy labels / data safety form matches actual behaviour

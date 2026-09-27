@@ -47,6 +47,19 @@ Out for v1 (deliberate, recorded so it is not re-litigated):
 - Ammunition purchasing, pricing, build instructions — see D10
 - Native app polish (widgets, watch app, widgets, deep links) — post-launch
 
+### Distribution constraint
+
+**No user gets this app before accounts are working** (Stage 2). Confirmed by
+the owner. Consequences:
+
+- Stage 1 ships local-only and is for the developer's own use and testing, so
+  the local-to-cloud migration (`S2-18`) is a convenience rather than a
+  user-facing data-loss risk.
+- There is no window where a user has data trapped in a device-local store,
+  which is the usual reason to build migration carefully.
+- TestFlight/Play internal distribution in Stage 1 is for policy validation
+  (`S1-29`), not for gathering user feedback.
+
 ## Architecture
 
 ```
@@ -100,14 +113,18 @@ code tasks and cannot be automated.
 
 - [ ] **Apple Developer Program** — $99/yr. Needs a real Apple ID, legal entity or
       individual name matching the store listing. Gate for TestFlight *and* the
-      App Store.
+      App Store. **Start early**; identity verification and enrolment are not
+      instant and it gates the Stage 1 device check (`S1-29`).
 - [ ] **Google Play Console** — one-off ~$25. Needs identity verification.
+      Same advice: enrolment is not instant, and it gates the Stage 1 device
+      check.
 - [ ] **Supabase project** — create the project, keep the DB password safe.
 - [ ] **Expo account + EAS project** — link the GitHub repo.
 - [ ] **Domain / support URL** — stores require a real support page and a
       reachable contact email.
 - [ ] **Privacy policy** — required by both stores. Must describe the actual
-      data collected (email, display name, gear lists).
+      data collected (email, display name, gear lists). *Deliberately deferred
+      to just before release — it is not a blocker for build work.*
 - [ ] **Store assets** — icon, screenshots, description, marketing copy that
       avoids firearms positioning (D10).
 - [ ] **Age rating questionnaire** — answer honestly, including any weapons
