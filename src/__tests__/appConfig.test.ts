@@ -34,4 +34,18 @@ describe('app config', () => {
   it('has a non-empty slug, which is permanent once EAS is initialised', () => {
     expect(config.slug).toBeTruthy();
   });
+
+  it('omits eas.projectId entirely when EAS_PROJECT_ID is unset', () => {
+    // Regression: setting projectId to null made every `eas` command fail with
+    // "must be a string, found object", and blocked the CLI from
+    // auto-configuring the project. The key must be absent, never null.
+    const eas = config.extra?.eas as { projectId?: unknown } | undefined;
+
+    if (process.env.EAS_PROJECT_ID) {
+      expect(eas?.projectId).toBe(process.env.EAS_PROJECT_ID);
+    } else {
+      expect(config.extra).not.toHaveProperty('eas');
+      expect(eas).toBeUndefined();
+    }
+  });
 });

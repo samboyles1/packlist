@@ -23,6 +23,10 @@ const SCHEME = 'packlist';
 const IOS_BUNDLE_ID = 'com.example.packlist';
 const ANDROID_PACKAGE = 'com.example.packlist';
 
+// Set by `eas init` into the local .env (gitignored). Absent on a fresh clone,
+// which is fine — EAS auto-configures the project on its next run.
+const EAS_PROJECT_ID = process.env.EAS_PROJECT_ID;
+
 const config: ExpoConfig = {
   name: NAME,
   slug: SLUG,
@@ -69,9 +73,10 @@ const config: ExpoConfig = {
       url: process.env.EXPO_PUBLIC_SUPABASE_URL ?? null,
       anonKey: process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY ?? null,
     },
-    eas: {
-      projectId: process.env.EAS_PROJECT_ID ?? null,
-    },
+    // `eas.projectId` must be a string or the key must be ABSENT. Setting it to
+    // null makes every `eas` command fail with a type error, and it also stops
+    // the CLI auto-configuring the project on the next run. See appConfig.test.ts.
+    ...(EAS_PROJECT_ID ? { eas: { projectId: EAS_PROJECT_ID } } : {}),
   },
 };
 
