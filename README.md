@@ -90,6 +90,14 @@ through EAS.
   until typecheck, lint, tests, format, the Expo config load and a real Metro
   export all pass. `enforce_admins` is on, so this applies to the owner too.
 
+## Licence
+
+**Proprietary — all rights reserved.** See [`LICENSE`](LICENSE). There is no
+open source grant: the code is public so it can be inspected, not so it can be
+used, copied, modified or redistributed. Permission must come in writing from
+`samboyles1`; see the file for the contact address. Third-party dependencies remain
+under their own licences.
+
 ## Provenance
 
 `reference/pack-weigh-web/` is the original Claude artifact, saved from the web
