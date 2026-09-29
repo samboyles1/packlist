@@ -1,0 +1,76 @@
+Copyright (c) 2026 supasma
+
+                              ALL RIGHTS RESERVED
+
+This software and its source code (the "Software") are the proprietary and
+confidential property of supasma (the "Company"). All rights not
+expressly granted are reserved.
+
+This is NOT an open source licence. It grants no permission to anyone.
+
+
+1. NO LICENCE GRANTED
+---------------------
+
+No licence, express or implied, is granted to any person or entity to use, copy,
+modify, create derivative works of, publish, distribute, sublicense, sell,
+sublicense, lease, rent, host, mirror, scrape, train on, or exploit the
+Software, in whole or in part, for any purpose, without the prior written
+permission of the Company.
+
+The Software is published in a publicly readable repository so that its source
+code can be inspected. Public availability is not a grant of permission. It is
+not an invitation to use, adapt, or redistribute it. The GitHub Terms of Service
+govern GitHub's own hosting and display of the repository and are separate from,
+and do not modify, these terms.
+
+
+2. PERMISSION
+-------------
+
+Any permission must be in writing, signed by the Company, and must state the
+specific rights granted. Nothing in this file, in the repository, in any issue,
+discussion, or commit message constitutes such a permission.
+
+To request permission, contact the Company at 26637433+samboyles1@users.noreply.github.com.
+
+
+3. TRADEMARKS AND ATTRIBUTION
+-----------------------------
+
+No trademark or other right in the Company name, logos, product names,
+application names, or brand features is granted. You may not use them, or any
+similar mark, without written permission. Nothing here permits you to claim
+association with, or endorsement by, the Company.
+
+
+4. NO WARRANTY
+--------------
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+FOR A PARTICULAR PURPOSE, TITLE, AND NON-INFRINGEMENT. THE COMPANY DOES NOT
+WARRANT THAT THE SOFTWARE WILL BE ERROR-FREE OR UNINTERRUPTED, AND IS NOT
+LIABLE FOR ANY DAMAGES ARISING FROM ITS USE.
+
+
+5. THIRD-PARTY DEPENDENCIES
+----------------------------
+
+Third-party packages resolved through the package manager remain governed by
+their own licences, as stated in those packages and in the lockfile. Those
+licences govern those packages. They do not extend any permission to the
+Software, and nothing in this file restricts your use of them in accordance with
+their respective terms.
+
+
+6. TERMINATION
+--------------
+
+Any unauthorised use, copying, modification, or distribution of the Software
+terminates automatically any permission that may have been granted, whether
+expressly or implied, and may give rise to legal remedies including injunctive
+relief and damages.
+
+
+supasma. All rights reserved.

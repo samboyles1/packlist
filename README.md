@@ -82,6 +82,14 @@ through EAS.
 - **Decisions are recorded** in `docs/DECISIONS.md` so a future session (or
   human) knows why things are the way they are.
 
+## Licence
+
+**Proprietary — all rights reserved.** See [`LICENSE`](LICENSE). There is no
+open source grant: the code is public so it can be inspected, not so it can be
+used, copied, modified or redistributed. Permission must come in writing from
+`supasma`; see the file for the contact address. Third-party dependencies remain
+under their own licences.
+
 ## Provenance
 
 `reference/pack-weigh-web/` is the original Claude artifact, saved from the web
