@@ -4,6 +4,10 @@
 module.exports = {
   preset: 'jest-expo',
   setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
+  // `src/__tests__/helpers` holds shared fixtures and the SQLite test driver, not
+  // test suites. jest's default testMatch treats everything under `__tests__` as a
+  // suite, so it has to be excluded explicitly.
+  testPathIgnorePatterns: ['/node_modules/', '<rootDir>/src/__tests__/helpers/'],
   transformIgnorePatterns: [
     'node_modules/(?!((jest-)?react-native|@react-native(-community)?)|expo(nent)?|@expo(nent)?/.*|@expo-google-fonts/.*|react-navigation|@react-navigation/.*|@unimodules/.*|unimodules|sentry-expo|native-base|react-native-svg)',
   ],
