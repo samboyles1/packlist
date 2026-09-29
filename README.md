@@ -12,10 +12,11 @@ is being built in stages; see [`docs/ROADMAP.md`](docs/ROADMAP.md).
 | | |
 |---|---|
 | Stack | Expo SDK 57 (React Native 0.86), TypeScript, expo-router, Supabase |
-| Stage | 0 — Foundations (in progress) |
+| Stage | 1 — Local gear inventory |
 | Expo SDK | 57 · React 19.2.3 · Node 22 |
-| Repo | github.com/samboyles1/packlist (private) |
+| Repo | github.com/samboyles1/packlist (public) |
 | App name | Placeholder — `app.config.ts` is the only place to rename |
+| Merge gate | `main` is protected: PR only, and `Typecheck, lint and test` must pass |
 
 ## Commands
 
@@ -74,6 +75,10 @@ through EAS.
 
 ## Working agreement
 
+- **Test-driven.** Load the `tdd` skill before touching implementation code. A
+  separate agent writes the tests, a separate agent writes the code, and the code
+  is fixed when the two disagree. Tests are the specification. See
+  [`docs/DECISIONS.md`](docs/DECISIONS.md) D11.
 - **Work in stages.** Finish and merge a stage before starting the next.
 - **Commit in small, reviewable chunks** — one logical change per commit, with
   the task ID in the message (`S3-02: ...`).
@@ -81,6 +86,9 @@ through EAS.
   `docs/BACKLOG.md` with a new ID rather than silently expanding a stage.
 - **Decisions are recorded** in `docs/DECISIONS.md` so a future session (or
   human) knows why things are the way they are.
+- **`main` is protected.** Direct pushes are rejected, and a PR will not merge
+  until typecheck, lint, tests, format, the Expo config load and a real Metro
+  export all pass. `enforce_admins` is on, so this applies to the owner too.
 
 ## Licence
 

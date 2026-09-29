@@ -98,8 +98,8 @@ Layer rules, so this stays true as the app grows:
 
 | # | Risk | Impact | Mitigation |
 |---|---|---|---|
-| R1 | **Weapons content trips store review.** The catalogue includes rifles and ammunition. | Release blocked, possibly after building the whole thing. | Validate in **Stage 1** with a real TestFlight/Play internal build, not at final submission. Keep the app positioned as generic pack tracking; no sales, no build instructions, no ammo pricing (D10). |
-| R2 | Offline sync is the most bug-prone part. | Data feels broken; trust collapse. | Queue writes only for own rows (D3) so replay is idempotent. Add a visible sync indicator. Ship offline read before offline writes. |
+| R1 | ~~Weapons content trips store review.~~ **RESOLVED** — the owner confirmed with both stores that the use case is acceptable, on the basis that all gear data is user-entered. | — | Closed. `docs/DECISIONS.md` D10 still holds: no sales, no build instructions, no ammo pricing. Keep that discipline so the answer stays true. |
+| R2 | Offline sync is the most bug-prone part. | Data feels broken; trust collapse. | Queue writes only for own rows (D3) so replay is idempotent. Add a visible sync indicator. Ship offline read before offline writes. Required to be built test-first through the `tdd` skill (D11) — this is the area most likely to hide a bug behind a plausible-looking test. |
 | R3 | Stage 1 port is underestimated. | Timeline slips at the start. | The reference bundle is readable, but it is a reimplementation, not a conversion (D9). Timebox it; fall back to a plain CRUD form UI if the port drags. |
 | R4 | Realtime compare view feels stale or spams. | Perceived bug. | Realtime is an optimisation only — always also refetch on focus. Debounce. |
 | R5 | Solo maintenance burden. | Rot. | Free tiers, no servers to patch. Supabase + Expo chosen partly to avoid an ops surface (D2). |
@@ -133,10 +133,18 @@ code tasks and cannot be automated.
 
 ## How to work on this across sessions
 
+**Work test-first.** Load the `tdd` skill before touching implementation code. A
+separate agent writes the tests, a separate agent writes the code, and the code
+is fixed when the two disagree (D11). The backlog task ID goes in the commit
+message.
+
 1. Open `docs/BACKLOG.md`, pick the lowest-numbered unstarted task for the
    current stage.
-2. Do it. Reference its ID in the commit message: `S3-02: ...`.
-3. Commit in small chunks — one logical change per commit, no unrelated edits.
+2. Follow the `tdd` skill: hash the test files, have the test agent write the
+   failing tests, commit them red, have the implement agent make them pass,
+   then re-hash to prove no test was edited.
+3. Commit in small chunks — one logical change per commit, with
+   the task ID in the message (`S3-02: ...`).
 4. New requirement? Add a task with the next free ID. Do not expand a stage
    silently.
 5. A decision that would be expensive to reverse? Add it to `docs/DECISIONS.md`
@@ -144,3 +152,13 @@ code tasks and cannot be automated.
 
 **The backlog is the source of truth for what is next.** If this document and
 the backlog disagree, the backlog is what was actually committed.
+
+## CI is the gate
+
+Every PR runs typecheck, lint, tests, a format check, an Expo config load and a
+real Metro export. `main` is branch-protected: **a PR cannot merge unless all of
+it passes**, and `main` cannot be pushed to directly.
+
+This matters beyond process. RLS is the authorisation model, not
+defence-in-depth — a bug in the app must never be able to leak another user's
+pack. A merge gate is what keeps that guarantee from decaying as the app grows.
