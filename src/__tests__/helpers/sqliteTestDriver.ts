@@ -88,7 +88,12 @@ export function createTestDriver(path: string): RecordingDriver {
     return values.map((value) => {
       if (typeof value === 'boolean') return value ? 1 : 0;
       if (value === undefined) throw new TypeError('undefined cannot be bound');
-      if (value === null || typeof value === 'number' || typeof value === 'string' || typeof value === 'bigint') {
+      if (
+        value === null ||
+        typeof value === 'number' ||
+        typeof value === 'string' ||
+        typeof value === 'bigint'
+      ) {
         return value;
       }
       if (value instanceof Uint8Array) return value;
@@ -120,7 +125,10 @@ export function createTestDriver(path: string): RecordingDriver {
       return db.prepare(source).all(...bind(params)) as T[];
     },
 
-    async getFirstAsync<T = unknown>(source: string, ...params: unknown[]): Promise<T | null> {
+    async getFirstAsync<T = unknown>(
+      source: string,
+      ...params: unknown[]
+    ): Promise<T | null> {
       statements.push(source);
       // `getFirstAsync` resolves to null for no row; `node:sqlite` gives undefined.
       return (db.prepare(source).get(...bind(params)) as T | undefined) ?? null;

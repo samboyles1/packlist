@@ -1,6 +1,13 @@
 /// <reference types="node" />
 import { SORTED_CATEGORIES } from '@/data/categories';
-import { categoryBreakdown, collectLinkedItemIds, resolveUnitWeight, summarisePack } from '@/lib/weights';
+import { LOCAL_USER_ID } from '@/data/db';
+import type { LocalRepository, NewItem, PackContentsLine } from '@/data/localRepository';
+import {
+  categoryBreakdown,
+  collectLinkedItemIds,
+  resolveUnitWeight,
+  summarisePack,
+} from '@/lib/weights';
 import type { PackWeightInput } from '@/lib/weights';
 import type { GearItem, ItemLinks, Pack, PackId, PackLine } from '@/types/gear';
 
@@ -14,9 +21,6 @@ import {
   sleep,
 } from './helpers/storeFixtures';
 import type { TestStore } from './helpers/storeFixtures';
-
-import { LOCAL_USER_ID } from '@/data/db';
-import type { LocalRepository, NewItem, PackContentsLine } from '@/data/localRepository';
 
 /**
  * S1-02 — the local store's read and write surface, and the guarantees the rest
@@ -71,7 +75,12 @@ async function seedArtifactPack(repository: LocalRepository): Promise<PackId> {
     newItem({ categoryId: 'clothing', name: ARTIFACT.jacket.name, weightGrams: 290 }),
   );
   const boots = await repository.createItem(
-    newItem({ categoryId: 'footwear', name: ARTIFACT.boots.name, weightGrams: 2100, isWorn: true }),
+    newItem({
+      categoryId: 'footwear',
+      name: ARTIFACT.boots.name,
+      weightGrams: 2100,
+      isWorn: true,
+    }),
   );
   const meals = await repository.createItem(
     newItem({
@@ -106,7 +115,12 @@ async function seedArtifactPack(repository: LocalRepository): Promise<PackId> {
 
 /** The same pack, built in memory, for the round-trip comparison. */
 function artifactPackInMemory(): PackWeightInput {
-  const gear = (id: string, categoryId: string, weightGrams: number, over: Partial<GearItem> = {}) => ({
+  const gear = (
+    id: string,
+    categoryId: string,
+    weightGrams: number,
+    over: Partial<GearItem> = {},
+  ) => ({
     id,
     userId: LOCAL_USER_ID,
     categoryId,
@@ -166,14 +180,26 @@ function artifactPackInMemory(): PackWeightInput {
   }));
 
   const links: ItemLinks = {
-    [ARTIFACT.rifle.name]: [ARTIFACT.scope.name, ARTIFACT.rings.name, ARTIFACT.bipod.name],
+    [ARTIFACT.rifle.name]: [
+      ARTIFACT.scope.name,
+      ARTIFACT.rings.name,
+      ARTIFACT.bipod.name,
+    ],
   };
 
-  return { pack, lines, itemsById: new Map(items.map((entry) => [entry.id, entry])), links };
+  return {
+    pack,
+    lines,
+    itemsById: new Map(items.map((entry) => [entry.id, entry])),
+    links,
+  };
 }
 
 /** The rifle is first in the artifact pack, at position 0. */
-async function rifleLineIn(repository: LocalRepository, packId: PackId): Promise<PackLine> {
+async function rifleLineIn(
+  repository: LocalRepository,
+  packId: PackId,
+): Promise<PackLine> {
   const contents = await repository.getPackContents(packId);
   return must(
     contents.find((entry) => entry.item.name === ARTIFACT.rifle.name),
@@ -200,7 +226,12 @@ async function readPackFromStore(
   const links = await repository.getItemLinks();
 
   const itemsById = new Map(contents.map((entry) => [entry.item.id, entry.item]));
-  const linkedIds = [...collectLinkedItemIds(contents.map((entry) => entry.itemId), links)]
+  const linkedIds = [
+    ...collectLinkedItemIds(
+      contents.map((entry) => entry.itemId),
+      links,
+    ),
+  ]
     .filter((id) => !itemsById.has(id))
     .sort();
   for (const item of await repository.getItemsByIds(linkedIds)) {
@@ -297,8 +328,12 @@ describe('adding an item to the catalogue (S1-11, S1-12)', () => {
   it('reads the flags back as booleans rather than 0 and 1', async () => {
     const store = await openTestStore();
 
-    const worn = await store.repository.createItem(newItem({ isWorn: true, mustHave: true }));
-    const plain = await store.repository.createItem(newItem({ isWorn: false, mustHave: false }));
+    const worn = await store.repository.createItem(
+      newItem({ isWorn: true, mustHave: true }),
+    );
+    const plain = await store.repository.createItem(
+      newItem({ isWorn: false, mustHave: false }),
+    );
 
     for (const id of [worn.id, plain.id]) {
       const read = must(await store.repository.getItem(id));
@@ -409,7 +444,12 @@ describe('weights survive storage exactly (D8)', () => {
       }),
     );
     const half = await store.repository.createItem(
-      newItem({ categoryId: 'packs', name: 'Half-full duffel', weightGrams: 900, litreVolume: 113.5 }),
+      newItem({
+        categoryId: 'packs',
+        name: 'Half-full duffel',
+        weightGrams: 900,
+        litreVolume: 113.5,
+      }),
     );
 
     expect((await store.repository.getItem(bag.id))?.litreVolume).toBe(113);
@@ -426,7 +466,9 @@ describe('editing and deleting an item (S1-11, S1-15)', () => {
     const created = await store.repository.createItem(
       newItem({ categoryId: 'pouches', name: ARTIFACT.bipod.name, weightGrams: 230 }),
     );
-    const edited = must(await store.repository.updateItem(created.id, { weightGrams: 245 }));
+    const edited = must(
+      await store.repository.updateItem(created.id, { weightGrams: 245 }),
+    );
 
     // `updatedAt` has its own test below; everything else must be untouched.
     expect({ ...edited, updatedAt: created.updatedAt }).toEqual({
@@ -442,9 +484,13 @@ describe('editing and deleting an item (S1-11, S1-15)', () => {
 
     const created = await store.repository.createItem(newItem({ name: 'Javelin Pro' }));
     await sleep(5);
-    const once = must(await store.repository.updateItem(created.id, { weightGrams: 245 }));
+    const once = must(
+      await store.repository.updateItem(created.id, { weightGrams: 245 }),
+    );
     await sleep(5);
-    const twice = must(await store.repository.updateItem(created.id, { brand: 'Javelin' }));
+    const twice = must(
+      await store.repository.updateItem(created.id, { brand: 'Javelin' }),
+    );
 
     expect(Date.parse(twice.updatedAt)).toBeGreaterThan(Date.parse(once.updatedAt));
     expect(twice.createdAt).toBe(created.createdAt);
@@ -459,13 +505,24 @@ describe('editing and deleting an item (S1-11, S1-15)', () => {
     const store = await openTestStore();
 
     const created = await store.repository.createItem(
-      newItem({ categoryId: 'food', name: 'Dinner', isConsumable: true, weightGrams: 190 }),
+      newItem({
+        categoryId: 'food',
+        name: 'Dinner',
+        isConsumable: true,
+        weightGrams: 190,
+      }),
     );
     const boxed = must(
-      await store.repository.updateItem(created.id, { packWeightGrams: 3000, unitsPerPack: 6 }),
+      await store.repository.updateItem(created.id, {
+        packWeightGrams: 3000,
+        unitsPerPack: 6,
+      }),
     );
     const unboxed = must(
-      await store.repository.updateItem(created.id, { packWeightGrams: null, unitsPerPack: null }),
+      await store.repository.updateItem(created.id, {
+        packWeightGrams: null,
+        unitsPerPack: null,
+      }),
     );
 
     expect(resolveUnitWeight(boxed).grams).toBe(500);
@@ -480,7 +537,9 @@ describe('editing and deleting an item (S1-11, S1-15)', () => {
     const store = await openTestStore();
 
     expect(
-      await store.repository.updateItem('00000000-0000-4000-8000-000000000000', { name: 'x' }),
+      await store.repository.updateItem('00000000-0000-4000-8000-000000000000', {
+        name: 'x',
+      }),
     ).toBeNull();
 
     await store.close();
@@ -489,7 +548,9 @@ describe('editing and deleting an item (S1-11, S1-15)', () => {
   it('deletes an item and the item after it is gone', async () => {
     const store = await openTestStore();
 
-    const created = await store.repository.createItem(newItem({ name: 'Spare bootlace' }));
+    const created = await store.repository.createItem(
+      newItem({ name: 'Spare bootlace' }),
+    );
     await store.repository.deleteItem(created.id);
 
     expect(await store.repository.getItem(created.id)).toBeNull();
@@ -560,11 +621,9 @@ describe('listing and filtering items (S1-10, S1-14)', () => {
       newItem({ categoryId: 'firearms', name: 'Rangefinder', weightGrams: 210 }),
     );
 
-    expect((await store.repository.listItems({ categoryId: 'firearms' })).map((i) => i.name)).toEqual([
-      '7mm-08 Rem 140gr',
-      'Rangefinder',
-      'Tikka T3x Lite',
-    ]);
+    expect(
+      (await store.repository.listItems({ categoryId: 'firearms' })).map((i) => i.name),
+    ).toEqual(['7mm-08 Rem 140gr', 'Rangefinder', 'Tikka T3x Lite']);
 
     await store.close();
   });
@@ -595,12 +654,12 @@ describe('listing and filtering items (S1-10, S1-14)', () => {
     await seed(store);
 
     // Upper and lower, both directions, so the assertion cannot pass by luck.
-    expect((await store.repository.listItems({ search: 'TIKKA' })).map((i) => i.name)).toEqual([
-      'Tikka T3x Lite',
-    ]);
-    expect((await store.repository.listItems({ search: 'leupold' })).map((i) => i.name)).toEqual([
-      'Leupold VX-5HD',
-    ]);
+    expect(
+      (await store.repository.listItems({ search: 'TIKKA' })).map((i) => i.name),
+    ).toEqual(['Tikka T3x Lite']);
+    expect(
+      (await store.repository.listItems({ search: 'leupold' })).map((i) => i.name),
+    ).toEqual(['Leupold VX-5HD']);
 
     await store.close();
   });
@@ -608,17 +667,24 @@ describe('listing and filtering items (S1-10, S1-14)', () => {
   it('searches the brand as well as the name', async () => {
     const store = await openTestStore();
     await store.repository.createItem(
-      newItem({ categoryId: 'packs', brand: 'Stone Glacier', name: 'Sky Talus 6900', weightGrams: 2400 }),
+      newItem({
+        categoryId: 'packs',
+        brand: 'Stone Glacier',
+        name: 'Sky Talus 6900',
+        weightGrams: 2400,
+      }),
     );
-    await store.repository.createItem(newItem({ categoryId: 'pouches', name: 'Talley Lightweight' }));
+    await store.repository.createItem(
+      newItem({ categoryId: 'pouches', name: 'Talley Lightweight' }),
+    );
 
-    expect((await store.repository.listItems({ search: 'stone' })).map((i) => i.name)).toEqual([
-      'Sky Talus 6900',
-    ]);
+    expect(
+      (await store.repository.listItems({ search: 'stone' })).map((i) => i.name),
+    ).toEqual(['Sky Talus 6900']);
     // "Talley" is a brand on one item and a name fragment on another.
-    expect((await store.repository.listItems({ search: 'talley' })).map((i) => i.name)).toEqual([
-      'Talley Lightweight',
-    ]);
+    expect(
+      (await store.repository.listItems({ search: 'talley' })).map((i) => i.name),
+    ).toEqual(['Talley Lightweight']);
 
     await store.close();
   });
@@ -627,9 +693,13 @@ describe('listing and filtering items (S1-10, S1-14)', () => {
     const store = await openTestStore();
     await seed(store);
 
-    expect(await store.repository.listItems({ categoryId: 'firearms', search: 'scope' })).toEqual([]);
     expect(
-      (await store.repository.listItems({ categoryId: 'optics', search: 'leupold' })).map((i) => i.name),
+      await store.repository.listItems({ categoryId: 'firearms', search: 'scope' }),
+    ).toEqual([]);
+    expect(
+      (await store.repository.listItems({ categoryId: 'optics', search: 'leupold' })).map(
+        (i) => i.name,
+      ),
     ).toEqual(['Leupold VX-5HD']);
 
     await store.close();
@@ -692,7 +762,8 @@ describe('packs (S1-16, S1-17)', () => {
     );
 
     expect(
-      (await store.repository.getPack('99999999-9999-4999-8999-999999999999'))?.weightGrams,
+      (await store.repository.getPack('99999999-9999-4999-8999-999999999999'))
+        ?.weightGrams,
     ).toBe(0);
 
     await store.close();
@@ -700,7 +771,9 @@ describe('packs (S1-16, S1-17)', () => {
 
   it('lists packs', async () => {
     const store = await openTestStore();
-    await store.repository.createPack(newPack({ name: 'Hunting Pack', weightGrams: 2400 }));
+    await store.repository.createPack(
+      newPack({ name: 'Hunting Pack', weightGrams: 2400 }),
+    );
     await store.repository.createPack(newPack({ name: 'Day Pack', weightGrams: 900 }));
 
     expect((await store.repository.listPacks()).map((p) => p.name).sort()).toEqual([
@@ -713,11 +786,18 @@ describe('packs (S1-16, S1-17)', () => {
 
   it('edits a pack without disturbing the other one', async () => {
     const store = await openTestStore();
-    const hunting = await store.repository.createPack(newPack({ name: 'Hunting Pack', weightGrams: 2400 }));
-    const day = await store.repository.createPack(newPack({ name: 'Day Pack', weightGrams: 900 }));
+    const hunting = await store.repository.createPack(
+      newPack({ name: 'Hunting Pack', weightGrams: 2400 }),
+    );
+    const day = await store.repository.createPack(
+      newPack({ name: 'Day Pack', weightGrams: 900 }),
+    );
 
     const edited = must(
-      await store.repository.updatePack(hunting.id, { name: 'Alpine Pack', weightGrams: 2600 }),
+      await store.repository.updatePack(hunting.id, {
+        name: 'Alpine Pack',
+        weightGrams: 2600,
+      }),
     );
 
     expect({ ...edited, updatedAt: hunting.updatedAt }).toEqual({
@@ -733,9 +813,13 @@ describe('packs (S1-16, S1-17)', () => {
   it('returns null for a pack that is not there', async () => {
     const store = await openTestStore();
 
-    expect(await store.repository.getPack('00000000-0000-4000-8000-000000000000')).toBeNull();
     expect(
-      await store.repository.updatePack('00000000-0000-4000-8000-000000000000', { name: 'x' }),
+      await store.repository.getPack('00000000-0000-4000-8000-000000000000'),
+    ).toBeNull();
+    expect(
+      await store.repository.updatePack('00000000-0000-4000-8000-000000000000', {
+        name: 'x',
+      }),
     ).toBeNull();
 
     await store.close();
@@ -743,8 +827,12 @@ describe('packs (S1-16, S1-17)', () => {
 
   it('deleting a pack leaves the other packs and the whole catalogue alone', async () => {
     const store = await openTestStore();
-    const hunting = await store.repository.createPack(newPack({ name: 'Hunting Pack', weightGrams: 2400 }));
-    const day = await store.repository.createPack(newPack({ name: 'Day Pack', weightGrams: 900 }));
+    const hunting = await store.repository.createPack(
+      newPack({ name: 'Hunting Pack', weightGrams: 2400 }),
+    );
+    const day = await store.repository.createPack(
+      newPack({ name: 'Day Pack', weightGrams: 900 }),
+    );
     const rifle = await store.repository.createItem(
       newItem({ categoryId: 'firearms', name: ARTIFACT.rifle.name, weightGrams: 2900 }),
     );
@@ -763,18 +851,38 @@ describe('packs (S1-16, S1-17)', () => {
 });
 
 describe('pack lines (S1-19, S1-20, S1-21)', () => {
-  async function seedLines(store: TestStore): Promise<{ packId: PackId; itemIds: string[] }> {
-    const pack = await store.repository.createPack(newPack({ name: 'Hunting Pack', weightGrams: 2400 }));
+  async function seedLines(
+    store: TestStore,
+  ): Promise<{ packId: PackId; itemIds: string[] }> {
+    const pack = await store.repository.createPack(
+      newPack({ name: 'Hunting Pack', weightGrams: 2400 }),
+    );
     const items = [
       { name: ARTIFACT.rifle.name, weightGrams: 2900 },
       { name: ARTIFACT.jacket.name, weightGrams: 290 },
       { name: ARTIFACT.boots.name, weightGrams: 2100 },
-    ].map((spec) => store.repository.createItem(newItem({ name: spec.name, weightGrams: spec.weightGrams })));
+    ].map((spec) =>
+      store.repository.createItem(
+        newItem({ name: spec.name, weightGrams: spec.weightGrams }),
+      ),
+    );
 
     const created = await Promise.all(items);
-    await store.repository.addLine({ packId: pack.id, itemId: created[0]!.id, position: 2 });
-    await store.repository.addLine({ packId: pack.id, itemId: created[1]!.id, position: 0 });
-    await store.repository.addLine({ packId: pack.id, itemId: created[2]!.id, position: 1 });
+    await store.repository.addLine({
+      packId: pack.id,
+      itemId: created[0]!.id,
+      position: 2,
+    });
+    await store.repository.addLine({
+      packId: pack.id,
+      itemId: created[1]!.id,
+      position: 0,
+    });
+    await store.repository.addLine({
+      packId: pack.id,
+      itemId: created[2]!.id,
+      position: 1,
+    });
 
     return { packId: pack.id, itemIds: created.map((item) => item.id) };
   }
@@ -782,7 +890,9 @@ describe('pack lines (S1-19, S1-20, S1-21)', () => {
   it('defaults a new line to one, unticked, first', async () => {
     const store = await openTestStore();
     const pack = await store.repository.createPack(newPack());
-    const rifle = await store.repository.createItem(newItem({ name: ARTIFACT.rifle.name }));
+    const rifle = await store.repository.createItem(
+      newItem({ name: ARTIFACT.rifle.name }),
+    );
 
     const line = await store.repository.addLine({ packId: pack.id, itemId: rifle.id });
 
@@ -828,7 +938,11 @@ describe('pack lines (S1-19, S1-20, S1-21)', () => {
     const lines = await store.repository.listLines(packId);
 
     expect(lines.map((line) => line.position)).toEqual([0, 1, 2]);
-    expect(lines.map((line) => line.itemId)).toEqual([itemIds[1], itemIds[2], itemIds[0]]);
+    expect(lines.map((line) => line.itemId)).toEqual([
+      itemIds[1],
+      itemIds[2],
+      itemIds[0],
+    ]);
 
     await store.close();
   });
@@ -838,16 +952,15 @@ describe('pack lines (S1-19, S1-20, S1-21)', () => {
     const { packId, itemIds } = await seedLines(store);
     const [rifleId, jacketId, bootsId] = itemIds as [string, string, string];
     const lines = await store.repository.listLines(packId);
-    const lineFor = (itemId: string) => must(lines.find((line) => line.itemId === itemId));
+    const lineFor = (itemId: string) =>
+      must(lines.find((line) => line.itemId === itemId));
     // Currently rifle 2, jacket 0, boots 1. Swap the rifle and the jacket.
     await store.repository.updateLine(lineFor(rifleId).id, { position: 0 });
     await store.repository.updateLine(lineFor(jacketId).id, { position: 2 });
 
-    expect((await store.repository.listLines(packId)).map((line) => line.itemId)).toEqual([
-      rifleId,
-      bootsId,
-      jacketId,
-    ]);
+    expect((await store.repository.listLines(packId)).map((line) => line.itemId)).toEqual(
+      [rifleId, bootsId, jacketId],
+    );
 
     await store.close();
   });
@@ -855,8 +968,12 @@ describe('pack lines (S1-19, S1-20, S1-21)', () => {
   it('keeps both lines when two of them share a position', async () => {
     const store = await openTestStore();
     const pack = await store.repository.createPack(newPack());
-    const rifle = await store.repository.createItem(newItem({ name: ARTIFACT.rifle.name }));
-    const jacket = await store.repository.createItem(newItem({ name: ARTIFACT.jacket.name }));
+    const rifle = await store.repository.createItem(
+      newItem({ name: ARTIFACT.rifle.name }),
+    );
+    const jacket = await store.repository.createItem(
+      newItem({ name: ARTIFACT.jacket.name }),
+    );
 
     await store.repository.addLine({ packId: pack.id, itemId: rifle.id, position: 0 });
     await store.repository.addLine({ packId: pack.id, itemId: jacket.id, position: 0 });
@@ -872,7 +989,9 @@ describe('pack lines (S1-19, S1-20, S1-21)', () => {
   it('remembers a tick, and remembers unticking it', async () => {
     const store = await openTestStore();
     const pack = await store.repository.createPack(newPack());
-    const boots = await store.repository.createItem(newItem({ name: ARTIFACT.boots.name }));
+    const boots = await store.repository.createItem(
+      newItem({ name: ARTIFACT.boots.name }),
+    );
     const line = await store.repository.addLine({ packId: pack.id, itemId: boots.id });
 
     const ticked = must(await store.repository.updateLine(line.id, { ticked: true }));
@@ -911,7 +1030,9 @@ describe('pack lines (S1-19, S1-20, S1-21)', () => {
   it('refuses to put the same item in a pack twice', async () => {
     const store = await openTestStore();
     const pack = await store.repository.createPack(newPack());
-    const rifle = await store.repository.createItem(newItem({ name: ARTIFACT.rifle.name }));
+    const rifle = await store.repository.createItem(
+      newItem({ name: ARTIFACT.rifle.name }),
+    );
     await store.repository.addLine({ packId: pack.id, itemId: rifle.id });
 
     await expect(
@@ -926,7 +1047,9 @@ describe('pack lines (S1-19, S1-20, S1-21)', () => {
     const store = await openTestStore();
     const hunting = await store.repository.createPack(newPack({ name: 'Hunting Pack' }));
     const day = await store.repository.createPack(newPack({ name: 'Day Pack' }));
-    const rifle = await store.repository.createItem(newItem({ name: ARTIFACT.rifle.name }));
+    const rifle = await store.repository.createItem(
+      newItem({ name: ARTIFACT.rifle.name }),
+    );
 
     await store.repository.addLine({ packId: hunting.id, itemId: rifle.id });
     await store.repository.addLine({ packId: day.id, itemId: rifle.id });
@@ -939,10 +1062,15 @@ describe('pack lines (S1-19, S1-20, S1-21)', () => {
 
   it('refuses a line on a pack that is not there', async () => {
     const store = await openTestStore();
-    const rifle = await store.repository.createItem(newItem({ name: ARTIFACT.rifle.name }));
+    const rifle = await store.repository.createItem(
+      newItem({ name: ARTIFACT.rifle.name }),
+    );
 
     await expect(
-      store.repository.addLine({ packId: '00000000-0000-4000-8000-000000000000', itemId: rifle.id }),
+      store.repository.addLine({
+        packId: '00000000-0000-4000-8000-000000000000',
+        itemId: rifle.id,
+      }),
     ).rejects.toThrow();
     expect(await store.repository.listItems()).toHaveLength(1);
 
@@ -954,7 +1082,10 @@ describe('pack lines (S1-19, S1-20, S1-21)', () => {
     const pack = await store.repository.createPack(newPack());
 
     await expect(
-      store.repository.addLine({ packId: pack.id, itemId: '00000000-0000-4000-8000-000000000000' }),
+      store.repository.addLine({
+        packId: pack.id,
+        itemId: '00000000-0000-4000-8000-000000000000',
+      }),
     ).rejects.toThrow();
     expect(await store.repository.listLines(pack.id)).toHaveLength(0);
 
@@ -964,7 +1095,9 @@ describe('pack lines (S1-19, S1-20, S1-21)', () => {
   it('refuses a quantity of zero and a negative quantity', async () => {
     const store = await openTestStore();
     const pack = await store.repository.createPack(newPack());
-    const rifle = await store.repository.createItem(newItem({ name: ARTIFACT.rifle.name }));
+    const rifle = await store.repository.createItem(
+      newItem({ name: ARTIFACT.rifle.name }),
+    );
 
     await expect(
       store.repository.addLine({ packId: pack.id, itemId: rifle.id, qty: 0 }),
@@ -997,7 +1130,9 @@ describe('pack lines (S1-19, S1-20, S1-21)', () => {
   it('returns null for a line that is not there', async () => {
     const store = await openTestStore();
 
-    expect(await store.repository.getLine('00000000-0000-4000-8000-000000000000')).toBeNull();
+    expect(
+      await store.repository.getLine('00000000-0000-4000-8000-000000000000'),
+    ).toBeNull();
 
     await store.close();
   });
@@ -1032,8 +1167,12 @@ describe('linked gear (S1-26)', () => {
 
   it('reads a link from the item that implies it, not the other way round', async () => {
     const store = await openTestStore();
-    const rifle = await store.repository.createItem(newItem({ name: ARTIFACT.rifle.name }));
-    const scope = await store.repository.createItem(newItem({ name: ARTIFACT.scope.name }));
+    const rifle = await store.repository.createItem(
+      newItem({ name: ARTIFACT.rifle.name }),
+    );
+    const scope = await store.repository.createItem(
+      newItem({ name: ARTIFACT.scope.name }),
+    );
 
     await store.repository.addItemLink(rifle.id, scope.id);
 
@@ -1046,7 +1185,9 @@ describe('linked gear (S1-26)', () => {
 
   it('refuses an item linked to itself', async () => {
     const store = await openTestStore();
-    const rifle = await store.repository.createItem(newItem({ name: ARTIFACT.rifle.name }));
+    const rifle = await store.repository.createItem(
+      newItem({ name: ARTIFACT.rifle.name }),
+    );
 
     await expect(store.repository.addItemLink(rifle.id, rifle.id)).rejects.toThrow();
     expect(await store.repository.getItemLinks()).toEqual({});
@@ -1056,7 +1197,9 @@ describe('linked gear (S1-26)', () => {
 
   it('refuses a link to an item that is not there', async () => {
     const store = await openTestStore();
-    const rifle = await store.repository.createItem(newItem({ name: ARTIFACT.rifle.name }));
+    const rifle = await store.repository.createItem(
+      newItem({ name: ARTIFACT.rifle.name }),
+    );
 
     await expect(
       store.repository.addItemLink(rifle.id, '00000000-0000-4000-8000-000000000000'),
@@ -1068,8 +1211,12 @@ describe('linked gear (S1-26)', () => {
 
   it('removes a link', async () => {
     const store = await openTestStore();
-    const rifle = await store.repository.createItem(newItem({ name: ARTIFACT.rifle.name }));
-    const scope = await store.repository.createItem(newItem({ name: ARTIFACT.scope.name }));
+    const rifle = await store.repository.createItem(
+      newItem({ name: ARTIFACT.rifle.name }),
+    );
+    const scope = await store.repository.createItem(
+      newItem({ name: ARTIFACT.scope.name }),
+    );
     await store.repository.addItemLink(rifle.id, scope.id);
 
     await store.repository.removeItemLink(rifle.id, scope.id);
@@ -1081,10 +1228,18 @@ describe('linked gear (S1-26)', () => {
 
   it('hands the weight engine the whole link map in one read', async () => {
     const store = await openTestStore();
-    const rifle = await store.repository.createItem(newItem({ name: ARTIFACT.rifle.name }));
-    const scope = await store.repository.createItem(newItem({ name: ARTIFACT.scope.name }));
-    const rings = await store.repository.createItem(newItem({ name: ARTIFACT.rings.name }));
-    const unrelated = await store.repository.createItem(newItem({ name: 'Torrentshell 3L' }));
+    const rifle = await store.repository.createItem(
+      newItem({ name: ARTIFACT.rifle.name }),
+    );
+    const scope = await store.repository.createItem(
+      newItem({ name: ARTIFACT.scope.name }),
+    );
+    const rings = await store.repository.createItem(
+      newItem({ name: ARTIFACT.rings.name }),
+    );
+    const unrelated = await store.repository.createItem(
+      newItem({ name: 'Torrentshell 3L' }),
+    );
     await store.repository.addItemLink(rifle.id, scope.id);
     await store.repository.addItemLink(rifle.id, rings.id);
 
@@ -1092,9 +1247,13 @@ describe('linked gear (S1-26)', () => {
 
     expect(Object.keys(links)).toEqual([rifle.id]);
     expect(links[rifle.id]?.slice().sort()).toEqual([rings.id, scope.id].sort());
-    expect([...collectLinkedItemIds([rifle.id], links)].sort()).toEqual([rings.id, scope.id].sort());
+    expect([...collectLinkedItemIds([rifle.id], links)].sort()).toEqual(
+      [rings.id, scope.id].sort(),
+    );
     // The unlinked jacket is not swept in.
-    expect([...collectLinkedItemIds([rifle.id, unrelated.id], links)]).not.toContain(unrelated.id);
+    expect([...collectLinkedItemIds([rifle.id, unrelated.id], links)]).not.toContain(
+      unrelated.id,
+    );
 
     await store.close();
   });
@@ -1164,7 +1323,9 @@ describe('the pack screen read (S1-18)', () => {
       ),
     );
 
-    expect(await store.repository.getItemsByIds([rifle.id, 'no-such-item'])).toEqual([rifle]);
+    expect(await store.repository.getItemsByIds([rifle.id, 'no-such-item'])).toEqual([
+      rifle,
+    ]);
   });
 
   it('gives each line its own id, not the id of the item it points at', async () => {
@@ -1238,7 +1399,9 @@ describe('the pack screen read (S1-18)', () => {
 
   it('is empty for a pack with nothing in it', async () => {
     const store = await openTestStore();
-    const pack = await store.repository.createPack(newPack({ name: 'Empty', weightGrams: 2400 }));
+    const pack = await store.repository.createPack(
+      newPack({ name: 'Empty', weightGrams: 2400 }),
+    );
 
     expect(await store.repository.getPackContents(pack.id)).toEqual([]);
 
@@ -1248,9 +1411,9 @@ describe('the pack screen read (S1-18)', () => {
   it('is empty for a pack that is not there', async () => {
     const store = await openTestStore();
 
-    expect(await store.repository.getPackContents('00000000-0000-4000-8000-000000000000')).toEqual(
-      [],
-    );
+    expect(
+      await store.repository.getPackContents('00000000-0000-4000-8000-000000000000'),
+    ).toEqual([]);
 
     await store.close();
   });
@@ -1258,7 +1421,9 @@ describe('the pack screen read (S1-18)', () => {
   it('leaves no line behind after the item is deleted', async () => {
     const store = await openTestStore();
     const pack = await store.repository.createPack(newPack());
-    const rifle = await store.repository.createItem(newItem({ name: ARTIFACT.rifle.name }));
+    const rifle = await store.repository.createItem(
+      newItem({ name: ARTIFACT.rifle.name }),
+    );
     await store.repository.addLine({ packId: pack.id, itemId: rifle.id });
 
     await store.repository.deleteItem(rifle.id);
@@ -1386,11 +1551,13 @@ describe('a pack weighs the same before and after storage (R7)', () => {
     );
 
     expect(boots.item.isWorn).toBe(true);
-    expect(must(categoryBreakdown(stored).find((row) => row.categoryId === 'footwear')).baseGrams).toBe(
-      0,
-    );
     expect(
-      must(categoryBreakdown(stored).find((row) => row.categoryId === 'footwear')).wornGrams,
+      must(categoryBreakdown(stored).find((row) => row.categoryId === 'footwear'))
+        .baseGrams,
+    ).toBe(0);
+    expect(
+      must(categoryBreakdown(stored).find((row) => row.categoryId === 'footwear'))
+        .wornGrams,
     ).toBe(2100);
 
     await store.close();
@@ -1451,8 +1618,12 @@ describe('reopening the database', () => {
       missingItemIds: [],
     });
     expect(lines.map((line) => line.position)).toEqual([0, 1, 2, 3, 4]);
-    expect(lines.filter((line) => line.ticked).map((line) => line.id)).toEqual([rifleLine.id]);
-    expect((await second.repository.getItemLinks())[rifleLine.itemId] ?? []).toHaveLength(3);
+    expect(lines.filter((line) => line.ticked).map((line) => line.id)).toEqual([
+      rifleLine.id,
+    ]);
+    expect((await second.repository.getItemLinks())[rifleLine.itemId] ?? []).toHaveLength(
+      3,
+    );
 
     await second.close();
   });
@@ -1474,7 +1645,9 @@ describe('reopening the database', () => {
     const placeholder = await first.repository.createItem(
       newItem({ name: 'To be weighed', weightGrams: 0 }),
     );
-    const heaviest = await first.repository.createItem(newItem({ name: 'Anvil', weightGrams: 2147483647 }));
+    const heaviest = await first.repository.createItem(
+      newItem({ name: 'Anvil', weightGrams: 2147483647 }),
+    );
     await first.close();
 
     const second = await openTestStore({ path: first.path });
@@ -1494,7 +1667,12 @@ describe('reopening the database', () => {
     const pack = await first.repository.createPack(newPack({ name: 'Hunting Pack' }));
     const a = await first.repository.createItem(newItem({ name: 'A', weightGrams: 100 }));
     const b = await first.repository.createItem(newItem({ name: 'B', weightGrams: 200 }));
-    const lineA = await first.repository.addLine({ packId: pack.id, itemId: a.id, position: 7, ticked: true });
+    const lineA = await first.repository.addLine({
+      packId: pack.id,
+      itemId: a.id,
+      position: 7,
+      ticked: true,
+    });
     await first.repository.addLine({ packId: pack.id, itemId: b.id, position: 3 });
     await first.close();
 

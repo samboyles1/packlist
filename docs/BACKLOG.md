@@ -35,7 +35,9 @@ Legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[!]` blocked (say why)
 ### Data model
 - [x] `S1-01` Category list seeded from `docs/DATA-MODEL.md`
       — *confirmed by owner: categories are system-owned, not user-definable*
-- [ ] `S1-02` Local store for items, packs, pack lines (SQLite or KV store)
+- [x] `S1-02` Local store for items, packs, pack lines — **expo-sqlite with real
+      tables** (D12). 103 tests against a real SQLite engine. Repository written
+      against a driver port, so the same SQL runs in tests and on device
 - [x] `S1-03` Item type definitions mirroring the Supabase schema
 
 ### Weight engine

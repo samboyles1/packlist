@@ -1,5 +1,7 @@
 /// <reference types="node" />
 import { CATEGORIES, SORTED_CATEGORIES } from '@/data/categories';
+import { MIGRATIONS, openLocalDatabase } from '@/data/db';
+import type { SqlDriver } from '@/data/db';
 
 import { createTestDriver } from './helpers/sqliteTestDriver';
 import {
@@ -12,10 +14,6 @@ import {
   tempDatabasePath,
 } from './helpers/storeFixtures';
 import type { TestStore } from './helpers/storeFixtures';
-
-import { MIGRATIONS, openLocalDatabase } from '@/data/db';
-import type { SqlDriver } from '@/data/db';
-
 
 /**
  * S1-02 — the local store's schema, its migration history, and the constraints
@@ -36,7 +34,11 @@ const ITEM_ID = '33333333-3333-4333-8333-333333333333';
 const LINKED_ITEM_ID = '44444444-4444-4444-8444-444444444444';
 const UNRELATED_ITEM_ID = '55555555-5555-4555-8555-555555555555';
 
-const insertItem = (id: string, name = 'Tikka T3x Lite', categoryId = 'firearms'): string =>
+const insertItem = (
+  id: string,
+  name = 'Tikka T3x Lite',
+  categoryId = 'firearms',
+): string =>
   `insert into items (id, category_id, name, weight_grams) values ('${id}', '${categoryId}', '${name}', 2900)`;
 
 const insertPack = (id: string, name = 'Hunting Pack'): string =>
@@ -58,7 +60,9 @@ async function columnNames(driver: SqlDriver, table: string): Promise<string[]> 
 }
 
 async function countRows(driver: SqlDriver, table: string): Promise<number> {
-  const row = await driver.getFirstAsync<{ n: number }>(`select count(*) as n from ${table}`);
+  const row = await driver.getFirstAsync<{ n: number }>(
+    `select count(*) as n from ${table}`,
+  );
   return row?.n ?? -1;
 }
 
@@ -68,9 +72,15 @@ async function seedReferenceRows(store: TestStore): Promise<void> {
   await store.driver.execAsync(insertPack(OTHER_PACK_ID, 'Day Pack'));
   await store.driver.execAsync(insertItem(ITEM_ID));
   await store.driver.execAsync(insertItem(LINKED_ITEM_ID, 'Leupold VX-5HD', 'optics'));
-  await store.driver.execAsync(insertItem(UNRELATED_ITEM_ID, 'Torrentshell 3L', 'clothing'));
-  await store.driver.execAsync(insertLine('aaaaaaaa-0000-4000-8000-000000000001', PACK_ID, ITEM_ID));
-  await store.driver.execAsync(insertLine('aaaaaaaa-0000-4000-8000-000000000002', OTHER_PACK_ID, ITEM_ID));
+  await store.driver.execAsync(
+    insertItem(UNRELATED_ITEM_ID, 'Torrentshell 3L', 'clothing'),
+  );
+  await store.driver.execAsync(
+    insertLine('aaaaaaaa-0000-4000-8000-000000000001', PACK_ID, ITEM_ID),
+  );
+  await store.driver.execAsync(
+    insertLine('aaaaaaaa-0000-4000-8000-000000000002', OTHER_PACK_ID, ITEM_ID),
+  );
   await store.driver.execAsync(
     `insert into item_links (item_id, linked_item_id) values ('${ITEM_ID}', '${LINKED_ITEM_ID}')`,
   );
@@ -110,7 +120,13 @@ describe('opening the local store', () => {
     const store = await openTestStore();
 
     expect(await tableNames(store.driver)).toEqual(
-      expect.arrayContaining(['categories', 'items', 'packs', 'pack_items', 'item_links']),
+      expect.arrayContaining([
+        'categories',
+        'items',
+        'packs',
+        'pack_items',
+        'item_links',
+      ]),
     );
 
     await store.close();
@@ -198,7 +214,9 @@ describe('seeding the system categories', () => {
 
   it('does not re-seed on a third open either', async () => {
     const first = await openTestStore();
-    await first.repository.createPack(newPack({ name: 'Hunting Pack', weightGrams: 2400 }));
+    await first.repository.createPack(
+      newPack({ name: 'Hunting Pack', weightGrams: 2400 }),
+    );
     await first.close();
 
     await openTestStore({ path: first.path }).then(async (second) => {
@@ -241,7 +259,11 @@ describe('migrations', () => {
       newItem({ name: 'Tikka T3x Lite', weightGrams: 2900, categoryId: 'firearms' }),
     );
     const pack = await first.repository.createPack(
-      newPack({ name: 'Stone Glacier Sky Talus 6900', weightGrams: 2400, litreVolume: 113 }),
+      newPack({
+        name: 'Stone Glacier Sky Talus 6900',
+        weightGrams: 2400,
+        litreVolume: 113,
+      }),
     );
     await first.close();
 
@@ -281,9 +303,9 @@ describe('migrations', () => {
     };
 
     const path = tempDatabasePath();
-    await expect(openTestStore({ path, migrations: [keep, interrupted] })).rejects.toThrow(
-      'interrupted mid-migration',
-    );
+    await expect(
+      openTestStore({ path, migrations: [keep, interrupted] }),
+    ).rejects.toThrow('interrupted mid-migration');
 
     // The half-applied migration left nothing behind, and the earlier one stuck.
     const midway = await openTestStore({ path, migrations: [] });
@@ -299,7 +321,9 @@ describe('migrations', () => {
     expect(await tableNames(repaired.driver)).toContain('added_late');
     // Version 1 was not applied a second time, so the row is still there.
     expect(ran).toEqual([1, 2]);
-    expect(await repaired.driver.getFirstAsync<{ x: number }>('select x from keep_me')).toEqual({
+    expect(
+      await repaired.driver.getFirstAsync<{ x: number }>('select x from keep_me'),
+    ).toEqual({
       x: 42,
     });
 
@@ -326,7 +350,9 @@ describe('constraints SQLite enforces, not JavaScript', () => {
     await store.driver.execAsync(insertItem(ITEM_ID));
 
     await expect(
-      store.driver.execAsync(insertLine('aaaaaaaa-0000-4000-8000-000000000001', PACK_ID, ITEM_ID)),
+      store.driver.execAsync(
+        insertLine('aaaaaaaa-0000-4000-8000-000000000001', PACK_ID, ITEM_ID),
+      ),
     ).rejects.toThrow(/FOREIGN KEY/i);
     expect(await countRows(store.driver, 'pack_items')).toBe(0);
 
@@ -338,7 +364,9 @@ describe('constraints SQLite enforces, not JavaScript', () => {
     await store.driver.execAsync(insertPack(PACK_ID));
 
     await expect(
-      store.driver.execAsync(insertLine('aaaaaaaa-0000-4000-8000-000000000001', PACK_ID, ITEM_ID)),
+      store.driver.execAsync(
+        insertLine('aaaaaaaa-0000-4000-8000-000000000001', PACK_ID, ITEM_ID),
+      ),
     ).rejects.toThrow(/FOREIGN KEY/i);
     expect(await countRows(store.driver, 'pack_items')).toBe(0);
 
@@ -362,7 +390,9 @@ describe('constraints SQLite enforces, not JavaScript', () => {
     await seedReferenceRows(store);
 
     await expect(
-      store.driver.execAsync(insertLine('aaaaaaaa-0000-4000-8000-00000000000a', PACK_ID, ITEM_ID, 0)),
+      store.driver.execAsync(
+        insertLine('aaaaaaaa-0000-4000-8000-00000000000a', PACK_ID, ITEM_ID, 0),
+      ),
     ).rejects.toThrow(/CHECK/i);
     expect(await countRows(store.driver, 'pack_items')).toBe(2);
 
@@ -374,7 +404,9 @@ describe('constraints SQLite enforces, not JavaScript', () => {
     await seedReferenceRows(store);
 
     await expect(
-      store.driver.execAsync(insertLine('aaaaaaaa-0000-4000-8000-00000000000a', PACK_ID, ITEM_ID, -3)),
+      store.driver.execAsync(
+        insertLine('aaaaaaaa-0000-4000-8000-00000000000a', PACK_ID, ITEM_ID, -3),
+      ),
     ).rejects.toThrow(/CHECK/i);
 
     await store.close();
@@ -436,7 +468,9 @@ describe('constraints SQLite enforces, not JavaScript', () => {
     await seedReferenceRows(store);
 
     await expect(
-      store.driver.execAsync(insertLine('aaaaaaaa-0000-4000-8000-00000000000a', PACK_ID, ITEM_ID)),
+      store.driver.execAsync(
+        insertLine('aaaaaaaa-0000-4000-8000-00000000000a', PACK_ID, ITEM_ID),
+      ),
     ).rejects.toThrow(/UNIQUE/i);
     expect(await countRows(store.driver, 'pack_items')).toBe(2);
 
@@ -543,12 +577,11 @@ describe('constraints SQLite enforces, not JavaScript', () => {
 
     await store.driver.runAsync('delete from items where id = ?', LINKED_ITEM_ID);
 
-    const remaining = await store.driver.getAllAsync<{ item_id: string; linked_item_id: string }>(
-      'select item_id, linked_item_id from item_links order by item_id',
-    );
-    expect(remaining).toEqual([
-      { item_id: UNRELATED_ITEM_ID, linked_item_id: ITEM_ID },
-    ]);
+    const remaining = await store.driver.getAllAsync<{
+      item_id: string;
+      linked_item_id: string;
+    }>('select item_id, linked_item_id from item_links order by item_id');
+    expect(remaining).toEqual([{ item_id: UNRELATED_ITEM_ID, linked_item_id: ITEM_ID }]);
     expect(await countRows(store.driver, 'items')).toBe(2);
 
     await store.close();

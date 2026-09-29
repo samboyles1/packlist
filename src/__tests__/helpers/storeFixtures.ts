@@ -1,13 +1,16 @@
 /// <reference types="node" />
 import { existsSync } from 'node:fs';
 
-import type { GearItem } from '@/types/gear';
-
-import { cleanupTempDatabases, createTestDriver, tempDatabasePath } from './sqliteTestDriver';
-import type { RecordingDriver } from './sqliteTestDriver';
-
 import { openLocalDatabase, type Migration } from '@/data/db';
 import type { LocalRepository, NewItem, NewPack } from '@/data/localRepository';
+import type { GearItem } from '@/types/gear';
+
+import {
+  cleanupTempDatabases,
+  createTestDriver,
+  tempDatabasePath,
+} from './sqliteTestDriver';
+import type { RecordingDriver } from './sqliteTestDriver';
 
 /**
  * Shared setup for the S1-02 local-store tests: one factory per thing, a

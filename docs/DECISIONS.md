@@ -254,3 +254,31 @@ Stage 2's sync.
   COOP/COEP headers. v1 is native-only, so that is not a dependency.
 - Migrations are additive and versioned from the start. The first shipped
   schema is still a schema other installs will have to move past.
+
+## D13 — Local schema conventions, pinned before Stage 2 ships rows
+
+**Context.** `S1-02` built the local store. Four conventions were not pinned by
+`docs/DATA-MODEL.md` and each is cheap to write down now and expensive to unpick
+once Stage 2 sync has real rows on both sides.
+
+**Decision.**
+- **`LOCAL_USER_ID` is a synthesised constant.** `user_id` is absent from the
+  local schema in Stage 1, since there is no account to belong to yet. Pinned by
+  a test so Stage 2 sync has something concrete to reconcile against.
+- **A pack's `NULL` `weight_grams` reads as `0`.** Every other nullable field
+  stays `null`. The asymmetry is forced by `Pack.weightGrams` being a
+  non-nullable `number` while the column is nullable, and it is load-bearing in
+  exactly one place — a non-boxed consumable's `null` `pack_weight_grams` /
+  `units_per_pack` pair must survive, because it is what divides 26 g per round.
+- **Timestamps are ISO-8601 UTC with milliseconds**, `createdAt` immutable,
+  `updatedAt` refreshed on edit. Generated locally in the same shape Postgres
+  returns, so sync never has to reformat.
+- **Client-generated UUIDs**, so Stage 2 pushes the same primary key rather than
+  remapping ids and breaking every foreign key in flight.
+
+**Consequences.**
+- A weight of `0` and an absent weight are distinguishable everywhere except a
+  pack's own weight, where they are deliberately not. If that is ever wrong, it
+  is wrong in one place and is now documented.
+- Stage 2 adds `user_id` as a migration. Because ids are client-generated, that
+  migration is additive and does not rewrite anything.
