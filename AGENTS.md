@@ -1,5 +1,36 @@
 This is an Expo/React Native mobile application. Prioritize mobile-first patterns, performance, and cross-platform compatibility.
 
+## Required: test-driven development
+
+**Load the `tdd` skill before writing or changing any implementation code** —
+anything under `src/` that is not a test. This is not optional and not
+advisory. A separate agent writes the tests, a separate agent writes the code,
+and the code is fixed when it disagrees with the tests. Tests are the
+specification.
+
+```bash
+npm test                      # jest
+npm run typecheck             # tsc --noEmit
+npm run lint                  # expo lint
+```
+
+CI runs these on every PR and the merge is blocked until they pass, so a green
+local run is a precondition, not a formality. The same gate plus a real Metro
+export is what `S1-29` and every later stage depend on.
+
+## This app in one paragraph
+
+A shared pack-weight planner for hunting trips. Each hunter maintains their own
+pack; trip members can read each other's packs and compare loadouts by category
+and total weight. Nobody edits anybody else's pack — which means offline writes
+can never conflict, and that is the central design fact (decision D3).
+
+The numbers users trust — base weight, total, per-category breakdown — are the
+whole product. A wrong total is worse than a crash, because it is invisible and
+gets believed. `src/lib/weights.ts` is the only place any weight is computed;
+never add a second implementation. Full context in `docs/`, and the staged plan
+in `docs/ROADMAP.md` with the task list in `docs/BACKLOG.md`.
+
 ## Expo has changed — do not trust your training data
 
 Expo ships breaking changes every SDK release. APIs you remember are likely renamed, moved, or removed. Before writing any code that touches an Expo, EAS, or React Native API:
@@ -36,6 +67,6 @@ Docs: https://docs.expo.dev/eas/index.md
 
 ## Rules
 
-- If `ios/` and `android/` directories do not exist, they are generated (Continuous Native Generation). Never create or edit them by hand — configure native behavior in `app.json` and config plugins.
+- If `ios/` and `android/` directories do not exist, they are generated (Continuous Native Generation). Never create or edit them by hand — configure native behavior in `app.config.ts` and config plugins.
 - Expo Go only includes its bundled native modules. After adding a library with native code, the app needs a development build: `npx expo run:ios|android` locally, or `eas build --profile development`.
 - Prefer recommended Expo modules over third-party libraries, and check your available skills before adding dependencies. Docs: https://docs.expo.dev/versions/latest/index.md

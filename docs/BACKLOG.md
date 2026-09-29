@@ -75,9 +75,12 @@ Legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[!]` blocked (say why)
 - [ ] `S1-28` Display formatting: kg/g and lb/oz (D8)
 
 ### Validation — do not skip
-- [ ] `S1-29` **Build on a real device and check App Store / Play policy
-      exposure for firearms content** (R1, D10). This is the reason Stage 1 is
-      early. Record the finding in `docs/DECISIONS.md`.
+- [x] `S1-29` Store-policy exposure for firearms content — **RESOLVED.** The
+      owner confirmed with both stores that the use case is acceptable, on the
+      basis that all gear data is user-entered. R1 closed. D10's constraints
+      (no sales, no build instructions, no ammo pricing) stay in force so the
+      answer remains true at submission. A real device build is still wanted
+      before Stage 1 is called done, but as UI testing, not a policy check.
 - [ ] `S1-30` Confirm zero network calls in the local build
 
 ## Stage 2 — Accounts and cloud sync

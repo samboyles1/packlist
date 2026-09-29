@@ -175,3 +175,31 @@ pricing. Keep weapon items as ordinary weight-bearing catalogue entries.
 - **Flagged as a genuine risk** — see `docs/PLAN.md`. Validate early with a
   TestFlight/Play internal build rather than discovering it at final submission.
   This is the kind of issue that can block a release with no appeal.
+
+## D11 — Test-driven development, with the spec written by a separate agent
+
+**Context.** The product's value is a small set of numbers users trust
+absolutely. Risk R7 in `docs/PLAN.md` is the class of bug where each screen is
+individually right and collectively wrong. In commit `a2d0434`, three weight
+tests failed on their first run and caught two real bugs, one of them exactly
+that: per-category base figures could not be reconciled with the pack total.
+
+**Decision.** Work test-first, through the `tdd` skill, with the specification
+and the implementation written by different agents. When they disagree, **the
+code changes.** A test may only be revised by the test agent, and only with a
+recorded reason, because a test quietly edited to match the code is
+indistinguishable from a test written to match the code.
+
+**Consequences.**
+- A single agent cannot satisfy itself. It cannot both decide what correct looks
+  like and be the one judged against it, so "the test passes" stops being
+  available as a shortcut to done.
+- The guard is mechanical, not a promise: test files are hashed before
+  implementation and re-hashed after, and the hashes must match.
+- Costs a little more per task. Worth it here, where the alternative is a wrong
+  total that nobody notices until a hunter is 4 kg over on a mountain.
+- A failing test committed on its own is treated as a legitimate, reviewable
+  statement of intent rather than a broken branch.
+- The rule extends to Stage 2's RLS policies. If the same agent writes the
+  policy and the test that "proves" it, the proof is worthless — and R6 is a
+  security boundary, not a correctness nicety.
