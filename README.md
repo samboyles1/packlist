@@ -87,7 +87,7 @@ through EAS.
 **Proprietary — all rights reserved.** See [`LICENSE`](LICENSE). There is no
 open source grant: the code is public so it can be inspected, not so it can be
 used, copied, modified or redistributed. Permission must come in writing from
-`supasma`; see the file for the contact address. Third-party dependencies remain
+`samboyles1`; see the file for the contact address. Third-party dependencies remain
 under their own licences.
 
 ## Provenance
