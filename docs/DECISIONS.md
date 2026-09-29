@@ -203,3 +203,54 @@ indistinguishable from a test written to match the code.
 - The rule extends to Stage 2's RLS policies. If the same agent writes the
   policy and the test that "proves" it, the proof is worthless — and R6 is a
   security boundary, not a correctness nicety.
+
+## D12 — expo-sqlite for the local store
+
+**Context.** Stage 1 has to ship a genuinely local app with no backend (D4,
+D6), so the local store has to be real persistence, not component state. The
+backlog left `S1-02` as "SQLite or KV store". Three candidates are available in
+SDK 57: `expo-sqlite`, `expo-sqlite/kv-store` (`SQLiteStorage`), and
+`@react-native-async-storage/async-storage`.
+
+**Decision.** Use **`expo-sqlite` directly, with real tables and SQL** — not
+kv-store, and not AsyncStorage. The local schema mirrors `docs/DATA-MODEL.md`
+minus the `user_id` columns and everything trip-related, which arrive with
+Stage 2's sync.
+
+**Rationale.**
+- The data is relational. `pack_items` references both `packs` and `items`, and
+  `item_links` is self-referential. Foreign keys, `ON DELETE CASCADE` and
+  `UNIQUE (pack_id, item_id)` are the enforcement, not a convenience. kv-store
+  is a single `storage(key, value)` table underneath, so all of that becomes
+  hand-written application logic.
+- S1-14 needs `WHERE category_id = ?` filtering over items, and S1-22 needs pack
+  contents with a join. Under AsyncStorage or kv-store both mean loading and
+  joining the entire dataset in JavaScript on every read.
+- Supabase is Postgres, and the shape is a deliberate mirror of it (D2, D6).
+  Real tables mean Stage 2 is a sync engine over a known schema rather than a
+  translation between two incompatible models.
+
+**Rejected alternatives.**
+- **kv-store** (`SQLiteStorage`) — a stable, supported AsyncStorage replacement
+  for small blobs. Wrong shape for a relational dataset. Noted because it is
+  easy to reach for and it is already SQLite underneath. Its first-run migration
+  race was fixed in `expo-sqlite` 57.0.2; pin at or above that.
+- **AsyncStorage** — maintained and in Expo Go, but the docs describe it as
+  "a good choice for storing small amounts of data… user preferences or app
+  state". A few hundred to a few thousand structured rows is not that.
+
+**Consequences.**
+- `PRAGMA foreign_keys = ON` is issued **per connection**; SQLite defaults it
+  off, so constraints silently do nothing until it is set. This is set in
+  `onInit` and is testable.
+- The async API is used, not the sync variants, which the docs warn can block
+  the JS thread.
+- The `expo-sqlite` config plugin stays **out of the config** until SQLCipher or
+  a custom FTS build is actually wanted. The plugin only exists for native
+  build-time options, and adding it needlessly forces a development build
+  instead of working in Expo Go. SQLCipher specifically is not available in
+  Expo Go at all.
+- Web support for SQLite is alpha in SDK 57 and needs a Metro wasm config plus
+  COOP/COEP headers. v1 is native-only, so that is not a dependency.
+- Migrations are additive and versioned from the start. The first shipped
+  schema is still a schema other installs will have to move past.
